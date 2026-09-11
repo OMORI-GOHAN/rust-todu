@@ -65,42 +65,72 @@ fn delete(tasks:&mut Vec<Task>) {
         .expect("输入合法内容！");
     let target = target.trim();
 
-    match target {
-        
-    }
+    let local = match check_type(&target) {
+        "id" => {
+            let id = target
+                .parse::<u64>()
+                .expect("id必须为数字");
+            search_by_id(tasks, id ).expect("找不到该任务")
+        }
+        _ => {
+            println!("没有搜索到该ID的任务");
+            return
+        }
+    };
+
+    tasks.remove(local);
 
 }
 
-fn check_type(target:&String) -> &str {
+fn check_type(target:&str) -> &str {
     let chars: Vec<char> = target.chars().collect();
     let string_type:&str;
     
-    let have_num = false;
-    let have_punctuation = false;
-    let have_letter = false;
+    let mut have_num: bool = false;
+    let mut have_punctuation: bool = false;
+    let mut have_alphabetic: bool = false;
     
     for c in chars{
         if c.is_ascii_punctuation() {
             have_punctuation = true;
+        }else if c.is_ascii_digit() {
+            have_num = true;
+        }else if c.is_ascii_alphabetic() {
+            have_alphabetic = true
         }
     }
+
+    if have_alphabetic{
+        string_type = "description";
+    }else if have_punctuation {
+        string_type = "date";
+    }else if have_num {
+        string_type = "id";
+    }else{
+        string_type = "illegal";
+    }
+
+    string_type
 }
 
 
 // 查找方法
-fn search(tasks:&[Task], id:u64) -> usize {
+fn search_by_id(tasks:&[Task], id:u64) -> Option<usize> {
     let mut left = 0;
-    let mut right   = tasks.len() - 1;
+    let mut right   = tasks.len();
     loop {
+        if left > right {
+            return None
+        }
         if tasks[(left + right) / 2].id > id {
-            left = (left + right) / 2 + 1;
+            right = (left + right) / 2;
         }else if tasks[(left + right) / 2].id < id {
-            right = (left + right) / 2 - 1;
+            left = (left + right) / 2 + 1;
         }else {
             break;
         }
     }
-    (left + right) / 2
+    Some((left + right) / 2)
 }
 
 fn control(tasks:&mut Vec<Task>) -> bool {
@@ -126,7 +156,7 @@ fn control(tasks:&mut Vec<Task>) -> bool {
             true
         },
         "2" => {
-            println!("删除任务");
+            delete(tasks);
             true
         },
         "3" => {
