@@ -1,8 +1,8 @@
-
 use std::io;
 use chrono::Local;
+ 
 
-
+#[derive(Clone)]
 struct Task {   
     id: u64,
     description: String,
@@ -56,6 +56,7 @@ fn show_tasks(tasks:&[Task]) {
     }
 }
 
+// 删除任务
 fn delete(tasks:&mut Vec<Task>) {
     show_tasks(tasks);
     println!("输入你想要删除的任务的描述/ID/创建时间");
@@ -72,16 +73,23 @@ fn delete(tasks:&mut Vec<Task>) {
                 .expect("id必须为数字");
             search_by_id(tasks, id ).expect("找不到该任务")
         }
+        "date" => {
+            search_by_date(tasks, target).expect("找不到该任务")
+        }
+        "description" => {
+            search_by_description(tasks, target).expect("找不到该任务")
+        }
         _ => {
-            println!("没有搜索到该ID的任务");
+            println!("无效的查找类型");
             return
         }
     };
 
     tasks.remove(local);
-
+    println!("已删除!");
 }
 
+// 检查输入的是id/描述/时间
 fn check_type(target:&str) -> &str {
     let chars: Vec<char> = target.chars().collect();
     let string_type:&str;
@@ -114,12 +122,12 @@ fn check_type(target:&str) -> &str {
 }
 
 
-// 查找方法
+// 查找方法(id) by 二分查找
 fn search_by_id(tasks:&[Task], id:u64) -> Option<usize> {
     let mut left = 0;
     let mut right   = tasks.len();
     loop {
-        if left > right {
+        if left >= right {
             return None
         }
         if tasks[(left + right) / 2].id > id {
@@ -131,6 +139,27 @@ fn search_by_id(tasks:&[Task], id:u64) -> Option<usize> {
         }
     }
     Some((left + right) / 2)
+}
+// 查找方法(date)
+fn search_by_date(tasks:&[Task], date:&str) -> Option<usize> {
+
+    for (index, task) in tasks.iter().enumerate(){
+        if task.date == date {
+            return Some(index);
+        }
+    }
+    None
+}
+
+// 查找方法(description)
+fn search_by_description(tasks:&[Task], description:&str) -> Option<usize> {
+
+    for (index, task) in tasks.iter().enumerate() {
+        if task.description == description {
+            return  Some(index);
+        }
+    }
+    None
 }
 
 fn control(tasks:&mut Vec<Task>) -> bool {
@@ -175,8 +204,6 @@ fn control(tasks:&mut Vec<Task>) -> bool {
         }
     }
 }
-
-
 
 
 
