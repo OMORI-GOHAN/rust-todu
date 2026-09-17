@@ -1,6 +1,8 @@
-use std::io;
+use std::error::Error;
+use std::io::{self, ErrorKind, Read, Write};
 use chrono::Local;
- 
+use std::fs::File;
+
 
 struct Task {   
     id: u64,
@@ -206,7 +208,53 @@ fn search_by_description(tasks: &[Task], description: &str) -> Option<usize> {
     None
 }
 
-fn control(tasks: &mut Vec<Task>) -> bool {
+// 保存至文件
+fn save_tasks(tasks: &[Task]) -> Result<(),Box<dyn Error>> {
+    let mut file = File::create("tasks.txt")?;
+    for task in tasks {
+        let line = format!(
+            "{} | {} | {} | {}\n",
+            task.id,
+            task.description,
+            task.completed,
+            task.date
+        );
+        file.write_all(line.as_bytes())?;
+    }
+    Ok(())
+}
+
+// 读取文件
+fn read_tasks(tasks: &mut Vec<Task>) -> Result<(), Box<dyn Error>> {
+    let mut tasks_line = String::new();
+    let mut f = match File::open("tasks.txt") {
+        Ok(file) => file,
+        Err(error) => match error.kind() {
+            ErrorKind::NotFound => match File::create("tasks.txt") {
+                Ok(fc) => fc,
+                Err(e) => return Err(e.into())
+            },
+            _ => return Err(error.into()),
+        }
+    };
+    f.read_to_string(&mut tasks_line)?;
+    for line in tasks_line.lines() {
+        let parts:Vec<&str> = line.split(" | ").collect();
+        if parts.len() != 4 {
+            let file_broken_error = io::Error::new(ErrorKind::InvalidData, "文件损坏！");
+            return Err(Box::new(file_broken_error));
+        
+        }
+        let id = parts[0].parse::<u64>()?;
+        let description = parts[1].to_string();
+        let completed = parts[2].parse::<bool>()?;
+        let date = parts[3].to_string();
+        tasks.push(Task::new(id, description, completed, date));
+    }
+    Ok(())
+}
+
+fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
     print!("
     欢迎使用rust-task!
     请输入对应数字以选择模式
@@ -227,41 +275,45 @@ fn control(tasks: &mut Vec<Task>) -> bool {
     match input {
         "1" => {
             add(tasks);
-            true
+            Ok(true)
         },
         "2" => {
             delete(tasks);
-            true
+            Ok(true)
         },
         "3" => {
             show_tasks(tasks);
-            true
+            Ok(true)
         },
         "4" => {
             change_task(tasks);
-            true
+            Ok(true)
         }
         "Q" | "q" => {
             println!("退出任务");
-            false
+            save_tasks(tasks)?;
+            Ok(false)
         }
 
         _ => {
             println!(" 无效内容，请按照提示输入");
-            true
+            Ok(true)
         }
     }
 }
 
 
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>>{
     let mut tasks: Vec<Task> = Vec::new();
-
+    println!("开始读取任务");
+    read_tasks(&mut tasks)?;
+    println!("读取任务完成");
     loop {
-        if !control(&mut tasks) {
+        if !control(&mut tasks)? {
             break;
         }
     } 
 
+    Ok(())
 }    
