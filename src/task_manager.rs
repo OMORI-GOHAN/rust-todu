@@ -1,7 +1,7 @@
 use chrono::Local;
 
 use crate::task::Task;
-use crate::control::{user_input, show_tasks};
+use crate::control::user_input;
 
 
 fn check_type(target: &str) -> &str {
@@ -100,10 +100,8 @@ pub fn find_task(tasks: &[Task], target: &str) -> Option<usize> {
 }
 
 // 删除任务
-pub fn delete(tasks: &mut Vec<Task>) {
-    show_tasks(tasks);
-    println!("输入你想要删除的任务的描述/ID/创建时间");
-    match find_task(tasks, user_input().as_str()) {
+pub fn delete(tasks: &mut Vec<Task>, target: String) {
+    match find_task(tasks, target.as_str()) {
         Some(local) => {
             tasks.remove(local);
             println!("已删除!");
@@ -115,10 +113,8 @@ pub fn delete(tasks: &mut Vec<Task>) {
 }
 
 
-pub fn change_task(tasks: &mut Vec<Task>) {
-    show_tasks(tasks);
-    println!("输入你想要修改的任务的描述/ID/创建时间");
-    match find_task(tasks, user_input().as_str()) {
+pub fn change_task(tasks: &mut Vec<Task>, target: String) {
+    match find_task(tasks, target.as_str()) {
         Some(local) => {
 
             tasks[local].show();

@@ -42,7 +42,10 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             Ok(true)
         },
         "2" => {
-            delete(tasks);
+            show_tasks(tasks);
+            println!("输入你想要删除的任务的描述/ID/创建时间");
+            let target = user_input();
+            delete(tasks, target);
             Ok(true)
         },
         "3" => {
@@ -50,7 +53,10 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             Ok(true)
         },
         "4" => {
-            change_task(tasks);
+            show_tasks(tasks);
+            println!("输入你想要修改的任务的描述/ID/创建时间");
+            let target = user_input();
+            change_task(tasks, target);
             Ok(true)
         },
         "Q" | "q" => {
