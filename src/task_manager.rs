@@ -34,7 +34,6 @@ fn check_type(target: &str) -> &str {
     string_type
 }
 
-
 // 查找方法(id) by 二分查找
 fn search_by_id(tasks: &[Task], id: u64) -> Option<usize> {
     let mut left = 0;
@@ -53,62 +52,49 @@ fn search_by_id(tasks: &[Task], id: u64) -> Option<usize> {
     }
     Some((left + right) / 2)
 }
+
 // 查找方法(date)
 fn search_by_date(tasks: &[Task], date: &str) -> Option<usize> {
 
-    for (index, task) in tasks.iter().enumerate(){
-        if task.date == date {
-            return Some(index);
-        }
-    }
-    None
+    tasks
+        .iter()
+        .position(|task| task.date == date)
 }
 
 // 查找方法(description)
 fn search_by_description(tasks: &[Task], description: &str) -> Option<usize> {
 
-    for (index, task) in tasks.iter().enumerate() {
-        if task.description == description {
-            return  Some(index);
-        }
-    }
-    None
+    tasks
+        .iter()
+        .position(|task| task.description == description)
 }
 
-pub fn find_task(tasks: &[Task], target: &str) -> Option<usize> {
-    let local = match check_type(target) {
+pub fn find_task(tasks: &[Task], target: &str) -> Result<usize, String> {
+    match check_type(target) {
         "id" => {
             let id = target
                 .parse::<u64>()
                 .expect("id必须为数字");
-            search_by_id(tasks, id)?
+            search_by_id(tasks, id).ok_or("找不到该任务！".to_string())
         }
         "date" => {
-            search_by_date(tasks, target)?
+            search_by_date(tasks, target).ok_or("找不到该任务！".to_string())
         }
         "description" => {
-            search_by_description(tasks, target)?
+            search_by_description(tasks, target).ok_or("找不到该任务！".to_string())
         }
         _ => {
-            println!("无效的查找类型");
-            return None;
+            Err("无效的查找类型！".to_string())
         }
-    };
-
-    Some(local)
+    }
 }
 
 // 删除任务
-pub fn delete(tasks: &mut Vec<Task>, target: &str) {
-    match find_task(tasks, target) {
-        Some(local) => {
-            tasks.remove(local);
-            println!("已删除!");
-        }
-        None => {
-            println!("找不到该任务！");
-        }
-    }; 
+pub fn delete(tasks: &mut Vec<Task>, target: &str) -> Result<(), String> {
+    let local = find_task(tasks, target)?;
+    tasks.remove(local);
+    print!("已删除！");
+    Ok(())
 }
 
 pub fn change_description(tasks: &mut Vec<Task>, local: usize, description: String) {
@@ -120,10 +106,6 @@ pub fn change_completed(tasks: &mut Vec<Task>, local: usize) {
     tasks[local].completed = !tasks[local].completed;
     println!("已修改！");
 }
-
-
-
-
 
 pub fn add(tasks: &mut Vec<Task>, description: String) {
 

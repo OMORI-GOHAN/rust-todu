@@ -22,7 +22,7 @@ pub fn show_tasks(tasks: &[Task]) {
 
 pub fn change_task(tasks: &mut Vec<Task>, target: &str, change_type: &str) {
     match find_task(tasks, target) {
-        Some(local) => {
+        Ok(local) => {
             match change_type {
                 "1" => {
                     println!("请输入新的任务描述");
@@ -37,8 +37,8 @@ pub fn change_task(tasks: &mut Vec<Task>, target: &str, change_type: &str) {
                 }
             }
         }
-        None => {
-            println!("找不到该任务！");
+        Err(massage) => {
+            println!("{}", massage);
         }
     };
 
@@ -70,7 +70,7 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             show_tasks(tasks);
             println!("输入你想要删除的任务的描述/ID/创建时间");
             let target = user_input();
-            delete(tasks, &target);
+            delete(tasks, &target)?;
             Ok(true)
         },
         "3" => {
