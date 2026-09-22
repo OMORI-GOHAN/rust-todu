@@ -1,4 +1,8 @@
+use chrono::Local;
+
 use crate::task::Task;
+use crate::control::{user_input, show_tasks};
+
 
 fn check_type(target: &str) -> &str {
     let chars: Vec<char> = target.chars().collect();
@@ -78,13 +82,13 @@ pub fn find_task(tasks: &[Task], target: &str) -> Option<usize> {
             let id = target
                 .parse::<u64>()
                 .expect("id必须为数字");
-            search_by_id(tasks, id).expect("找不到该任务")
+            search_by_id(tasks, id)?
         }
         "date" => {
-            search_by_date(tasks, target).expect("找不到该任务")
+            search_by_date(tasks, target)?
         }
         "description" => {
-            search_by_description(tasks, target).expect("找不到该任务")
+            search_by_description(tasks, target)?
         }
         _ => {
             println!("无效的查找类型");
@@ -93,4 +97,73 @@ pub fn find_task(tasks: &[Task], target: &str) -> Option<usize> {
     };
 
     Some(local)
+}
+
+// 删除任务
+pub fn delete(tasks: &mut Vec<Task>) {
+    show_tasks(tasks);
+    println!("输入你想要删除的任务的描述/ID/创建时间");
+    match find_task(tasks, user_input().as_str()) {
+        Some(local) => {
+            tasks.remove(local);
+            println!("已删除!");
+        }
+        None => {
+            println!("找不到该任务！");
+        }
+    }; 
+}
+
+
+pub fn change_task(tasks: &mut Vec<Task>) {
+    show_tasks(tasks);
+    println!("输入你想要修改的任务的描述/ID/创建时间");
+    match find_task(tasks, user_input().as_str()) {
+        Some(local) => {
+
+            tasks[local].show();
+        
+            println!("
+            选择您要执行的操作：
+            1.修改任务描述
+            2.修改任务完成与否
+            ");
+        
+            let input = user_input();
+        
+            match input.as_str() {
+                "1" => {
+                    println!("请输入新的任务描述");
+                    let new_description = user_input();
+                    tasks[local].description = new_description;
+                    println!("已修改!");
+                },
+                "2" => {
+                    tasks[local].completed = !tasks[local].completed;
+                    println!("已修改!");
+                },
+                _ => {
+                    println!("请输入合法内容！");
+                }
+            }
+        }
+        None => {
+            println!("找不到该任务！");
+        }
+    };
+
+}
+
+
+pub fn add(tasks: &mut Vec<Task>, description: String) {
+
+    // 获取时间
+    let now = Local::now();
+    let date = now.format("%Y-%m-%d %H:%M:%S").to_string();
+    let timestamp = now
+        .timestamp_nanos_opt()
+        .expect("无法获取纳秒级时间戳");
+
+    // 添加task
+    tasks.push(Task::new(timestamp as u64, description, false, date));
 }
