@@ -1,6 +1,6 @@
 // 控制程序
 use crate::task::Task;
-use crate::task_manager::{add, delete, change_task};
+use crate::task_manager::{add, delete, change_description, change_completed, find_task};
 use crate::storage::save_tasks;
 use std::error::Error;
 use std::io;
@@ -19,6 +19,31 @@ pub fn show_tasks(tasks: &[Task]) {
         item.show();
     }
 }
+
+pub fn change_task(tasks: &mut Vec<Task>, target: &str, change_type: &str) {
+    match find_task(tasks, target) {
+        Some(local) => {
+            match change_type {
+                "1" => {
+                    println!("请输入新的任务描述");
+                    let new_description = user_input();
+                    change_description(tasks, local, new_description);
+                },
+                "2" => {
+                    change_completed(tasks, local);
+                },
+                _ => {
+                    println!("请输入合法内容！");
+                }
+            }
+        }
+        None => {
+            println!("找不到该任务！");
+        }
+    };
+
+}
+
 
 pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
     print!("
@@ -45,7 +70,7 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             show_tasks(tasks);
             println!("输入你想要删除的任务的描述/ID/创建时间");
             let target = user_input();
-            delete(tasks, target);
+            delete(tasks, &target);
             Ok(true)
         },
         "3" => {
@@ -62,7 +87,7 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             show_tasks(tasks);
             println!("输入你想要修改的任务的描述/ID/创建时间");
             let target = user_input();
-            change_task(tasks, target, change_type);
+            change_task(tasks, &target, &change_type);
             Ok(true)
         },
         "Q" | "q" => {

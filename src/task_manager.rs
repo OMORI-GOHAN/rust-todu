@@ -1,7 +1,6 @@
 use chrono::Local;
 
 use crate::task::Task;
-use crate::control::user_input;
 
 
 fn check_type(target: &str) -> &str {
@@ -100,8 +99,8 @@ pub fn find_task(tasks: &[Task], target: &str) -> Option<usize> {
 }
 
 // 删除任务
-pub fn delete(tasks: &mut Vec<Task>, target: String) {
-    match find_task(tasks, target.as_str()) {
+pub fn delete(tasks: &mut Vec<Task>, target: &str) {
+    match find_task(tasks, target) {
         Some(local) => {
             tasks.remove(local);
             println!("已删除!");
@@ -112,37 +111,18 @@ pub fn delete(tasks: &mut Vec<Task>, target: String) {
     }; 
 }
 
-
-pub fn change_task(tasks: &mut Vec<Task>, target: String, change_type: String) {
-    match find_task(tasks, target.as_str()) {
-        Some(local) => {
-
-            tasks[local].show();
-        
-            
-        
-            match change_type.as_str() {
-                "1" => {
-                    println!("请输入新的任务描述");
-                    let new_description = user_input();
-                    tasks[local].description = new_description;
-                    println!("已修改!");
-                },
-                "2" => {
-                    tasks[local].completed = !tasks[local].completed;
-                    println!("已修改!");
-                },
-                _ => {
-                    println!("请输入合法内容！");
-                }
-            }
-        }
-        None => {
-            println!("找不到该任务！");
-        }
-    };
-
+pub fn change_description(tasks: &mut Vec<Task>, local: usize, description: String) {
+    tasks[local].description = description;
+    println!("已修改！");
 }
+
+pub fn change_completed(tasks: &mut Vec<Task>, local: usize) {
+    tasks[local].completed = !tasks[local].completed;
+    println!("已修改！");
+}
+
+
+
 
 
 pub fn add(tasks: &mut Vec<Task>, description: String) {
