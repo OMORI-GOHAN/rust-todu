@@ -113,21 +113,15 @@ pub fn delete(tasks: &mut Vec<Task>, target: String) {
 }
 
 
-pub fn change_task(tasks: &mut Vec<Task>, target: String) {
+pub fn change_task(tasks: &mut Vec<Task>, target: String, change_type: String) {
     match find_task(tasks, target.as_str()) {
         Some(local) => {
 
             tasks[local].show();
         
-            println!("
-            选择您要执行的操作：
-            1.修改任务描述
-            2.修改任务完成与否
-            ");
+            
         
-            let input = user_input();
-        
-            match input.as_str() {
+            match change_type.as_str() {
                 "1" => {
                     println!("请输入新的任务描述");
                     let new_description = user_input();

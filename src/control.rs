@@ -53,10 +53,16 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             Ok(true)
         },
         "4" => {
+            println!("
+            选择您要执行的操作：
+            1.修改任务描述
+            2.修改任务完成与否
+            ");
+            let change_type = user_input();
             show_tasks(tasks);
             println!("输入你想要修改的任务的描述/ID/创建时间");
             let target = user_input();
-            change_task(tasks, target);
+            change_task(tasks, target, change_type);
             Ok(true)
         },
         "Q" | "q" => {
