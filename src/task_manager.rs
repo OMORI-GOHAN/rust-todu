@@ -2,7 +2,7 @@ use chrono::Local;
 
 use crate::task::Task;
 
-
+#[allow(dead_code)]
 fn check_type(target: &str) -> &str {
     let chars: Vec<char> = target.chars().collect();
     let string_type:&str;
@@ -34,64 +34,50 @@ fn check_type(target: &str) -> &str {
     string_type
 }
 
-// 查找方法(id) by 二分查找
-fn search_by_id(tasks: &[Task], id: u64) -> Option<usize> {
-    let mut left = 0;
-    let mut right   = tasks.len();
-    loop {
-        if left >= right {
-            return None
-        }
-        if tasks[(left + right) / 2].id > id {
-            right = (left + right) / 2;
-        }else if tasks[(left + right) / 2].id < id {
-            left = (left + right) / 2 + 1;
-        }else {
-            break;
-        }
-    }
-    Some((left + right) / 2)
+// 查找方法(id)
+pub fn search_by_id(tasks: &[Task], id: u64) -> Option<usize> {
+    tasks.iter().position(|task| task.id == id)
 }
 
-// 查找方法(date)
-fn search_by_date(tasks: &[Task], date: &str) -> Option<usize> {
+// // 查找方法(date)
+// fn search_by_date(tasks: &[Task], date: &str) -> Option<usize> {
 
-    tasks
-        .iter()
-        .position(|task| task.date == date)
-}
+//     tasks
+//         .iter()
+//         .position(|task| task.date == date)
+// }
 
-// 查找方法(description)
-fn search_by_description(tasks: &[Task], description: &str) -> Option<usize> {
+// // 查找方法(description)
+// fn search_by_description(tasks: &[Task], description: &str) -> Option<usize> {
 
-    tasks
-        .iter()
-        .position(|task| task.description == description)
-}
+//     tasks
+//         .iter()
+//         .position(|task| task.description == description)
+// }
 
-pub fn find_task(tasks: &[Task], target: &str) -> Result<usize, String> {
-    match check_type(target) {
-        "id" => {
-            let id = target
-                .parse::<u64>()
-                .expect("id必须为数字");
-            search_by_id(tasks, id).ok_or("找不到该任务！".to_string())
-        }
-        "date" => {
-            search_by_date(tasks, target).ok_or("找不到该任务！".to_string())
-        }
-        "description" => {
-            search_by_description(tasks, target).ok_or("找不到该任务！".to_string())
-        }
-        _ => {
-            Err("无效的查找类型！".to_string())
-        }
-    }
-}
+// pub fn find_task(tasks: &[Task], target: &str) -> Result<usize, String> {
+//     match check_type(target) {
+//         "id" => {
+//             let id = target
+//                 .parse::<u64>()
+//                 .expect("id必须为数字");
+//             search_by_id(tasks, id).ok_or("找不到该任务！".to_string())
+//         }
+//         "date" => {
+//             search_by_date(tasks, target).ok_or("找不到该任务！".to_string())
+//         }
+//         "description" => {
+//             search_by_description(tasks, target).ok_or("找不到该任务！".to_string())
+//         }
+//         _ => {
+//             Err("无效的查找类型！".to_string())
+//         }
+//     }
+// }
 
 // 删除任务
-pub fn delete(tasks: &mut Vec<Task>, target: &str) -> Result<(), String> {
-    let local = find_task(tasks, target)?;
+pub fn delete(tasks: &mut Vec<Task>, target: u64) -> Result<(), String> {
+    let local = search_by_id(tasks, target).ok_or("找不到该任务！")?;
     tasks.remove(local);
     print!("已删除！");
     Ok(())

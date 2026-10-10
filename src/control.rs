@@ -1,6 +1,7 @@
+
 // 控制程序
 use crate::task::Task;
-use crate::task_manager::{add, delete, change_description, change_completed, find_task};
+use crate::task_manager::{add, delete, change_description, change_completed, search_by_id};
 use crate::storage::save_tasks;
 use std::error::Error;
 use std::io;
@@ -20,9 +21,9 @@ pub fn show_tasks(tasks: &[Task]) {
     }
 }
 
-pub fn change_task(tasks: &mut Vec<Task>, target: &str, change_type: &str) {
-    match find_task(tasks, target) {
-        Ok(local) => {
+pub fn change_task(tasks: &mut Vec<Task>, target: u64, change_type: &str) {
+    match search_by_id(tasks, target) {
+        Some(local) => {
             match change_type {
                 "1" => {
                     println!("请输入新的任务描述");
@@ -37,8 +38,8 @@ pub fn change_task(tasks: &mut Vec<Task>, target: &str, change_type: &str) {
                 }
             }
         }
-        Err(massage) => {
-            println!("{}", massage);
+        None => {
+            println!("找不到该任务！");
         }
     };
 
@@ -68,9 +69,17 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
         },
         "2" => {
             show_tasks(tasks);
-            println!("输入你想要删除的任务的描述/ID/创建时间");
-            let target = user_input();
-            delete(tasks, &target)?;
+            println!("输入你想要删除的任务的ID");
+            let target: u64 = match user_input().parse() {
+                Ok(id) => id,
+                Err(_) => {
+                    println!("请输入有效ID!");
+                    return Ok(true);
+                } 
+            };
+            if let Err(msg) =  delete(tasks, target) {
+                println!("{}", msg);
+            };
             Ok(true)
         },
         "3" => {
@@ -85,9 +94,15 @@ pub fn control(tasks: &mut Vec<Task>) -> Result<bool, Box<dyn Error>> {
             ");
             let change_type = user_input();
             show_tasks(tasks);
-            println!("输入你想要修改的任务的描述/ID/创建时间");
-            let target = user_input();
-            change_task(tasks, &target, &change_type);
+            println!("请输入你想更改的任务的ID");
+            let target: u64 = match user_input().parse() {
+                Ok(id) => id,
+                Err(_) => {
+                    println!("请输入有效ID!");
+                    return Ok(true);
+                }
+            };
+            change_task(tasks, target, &change_type);
             Ok(true)
         },
         "Q" | "q" => {
