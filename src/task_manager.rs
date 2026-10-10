@@ -105,3 +105,68 @@ pub fn add(tasks: &mut Vec<Task>, description: String) {
     // 添加task
     tasks.push(Task::new(timestamp as u64, description, false, date));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_tasks() -> Vec<Task> {
+        let mut tasks: Vec<Task> = Vec::new();
+        tasks.push(Task::new(114514, "test0".to_string(), false, "0".to_string()));
+        tasks.push(Task::new(1919810, "test1".to_string(), false, "1".to_string()));
+        tasks.push(Task::new(10086, "test2".to_string(), false, "2".to_string()));
+        tasks
+    }
+
+    #[test]
+    fn search_empty_tasks_returns_none() {
+        let task = Vec::new();
+
+        let result = search_by_id(&task, 10);
+
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn search_by_id_return_position() {
+        let tasks = sample_tasks();
+        let result = search_by_id(&tasks, 1919810);
+
+        assert_eq!(result, Some(1));
+    }   
+
+    #[test]
+    fn search_by_id_return_none() {
+        let tasks = sample_tasks();
+        let result = search_by_id(&tasks, 0);
+
+        assert_eq!(result, None);
+        
+    }
+
+    #[test]
+    fn delete_existing_task_removes_only_target() {
+        let mut tasks = sample_tasks();
+        let result = delete(&mut tasks, 1919810);
+
+        assert_eq!(result, Ok(()));
+
+        let ids: Vec<u64> = tasks.iter().map(|task| task.id).collect();
+        
+        assert_eq!(ids, vec![114514, 10086]);
+        
+    }
+
+    #[test]
+    fn delete_void_task() {
+        let mut tasks = sample_tasks();
+        let result = delete(&mut tasks, 123456789);
+
+        assert!(result.is_err());
+
+        let ids: Vec<u64> = tasks.iter().map(|task| task.id).collect();
+
+        assert_eq!(ids, vec![114514, 1919810, 10086]);
+        
+    }
+}
